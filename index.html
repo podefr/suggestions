@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Suggestions, by Taïaut</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="An application for gathering the suggestions from a team">
+    <meta name="author" content="Olivier Scherrer, for Taïaut">
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">Suggestions</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="#list" data-event="listen:click,show">List</a></li>
+              <li><a href="#new" data-event="listen:click,show">New suggestion</a></li>
+              <form class="navbar-search pull right" action>
+              		<input type="text" class="search-query span2" placeholder="search..." />
+              </form>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container" id="screens">
+
+	 	<form class="form-horizontal">
+			<fieldset>
+			<legend>New Suggestion</legend>
+				<div class="control-group">
+						<textarea class="input-xlarge" id="description" rows="3"></textarea>
+				</div>
+			  <div class="form-action">
+			  	<button class="btn btn-primary">Cancel</button>
+			  	<button type="submit" class="btn">Submit</button>
+			  </div>
+			</fieldset>
+		</form>
+		
+		<div class="suggestions" data-model="foreach">
+				<blockquote>
+				<p data-model="bind:innerHTML, value.desc">Description</p>
+				<small><span data-model="bind:innerHTML, value.author">Olivier</span>, <span data-model="bind:innerHTML, value.date">march the 10th of 2012</span></small>
+			</blockquote>
+		</div>
+		
+
+
+    </div> <!-- /container -->
+     <script src="lib/jquery.js"></script>
+    <script src="lib/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="lib/require.js"></script>
+    <script src="lib/Emily.js"></script>
+    <script src="lib/Olives.js"></script>
+    <script src="src/navigation.js"></script>
+    <script src="src/newsuggestion.js"></script>
+    <script src="src/listsuggestions.js"></script>
+    <script src="src/suggestions.js"></script>
+  </body>
+</html>
