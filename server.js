@@ -9,9 +9,10 @@ var urlParse = require("url"),
 	var url = urlParse.parse(req.url),
 		file = url.pathname != "/" ? url.pathname : '/index.html',
 		filetype = file.split(".").pop(),
-		types = {"html" : "html",
-				 "js" : "javascript",
-				 "css": "css"};
+		types = {"html" : "text/html",
+				 "js" : "text/javascript",
+				 "css": "text/css",
+				 "png": "image/png"};
 
   fs.readFile(__dirname + file,
 		  function (err, data) {
@@ -20,7 +21,7 @@ var urlParse = require("url"),
 		      return res.end('Error loading index.html');
 		    }
 
-		    res.writeHead(200, { 'Content-Type': 'text/' + types[filetype] });
+		    res.writeHead(200, { 'Content-Type': types[filetype] });
 		    res.end(data);
 		  });
 		}
