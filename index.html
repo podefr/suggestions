@@ -49,16 +49,16 @@
 						<textarea class="input-xlarge" id="description" rows="3"></textarea>
 				</div>
 			  <div class="form-action">
-			  	<button class="btn btn-primary">Cancel</button>
+			  	<button class="btn btn-primary" data-event="listen:click,cancel">Cancel</button>
 			  	<button type="submit" class="btn">Submit</button>
 			  </div>
 			</fieldset>
 		</form>
 		
 		<div class="suggestions" data-model="foreach">
-				<blockquote>
-				<p data-model="bind:innerHTML, value.desc">Description</p>
-				<small><span data-model="bind:innerHTML, value.author">Olivier</span>, <span data-model="bind:innerHTML, value.date">march the 10th of 2012</span></small>
+				<blockquote data-event="listen:click,edit">
+				<p data-model="bind:innerHTML, value.desc">I suggest that we debug this application!</p>
+				<small><span data-model="bind:innerHTML, value.author">podefr</span>, <span data-model="bind:innerHTML, value.date">march the 10th of 2012</span></small>
 			</blockquote>
 		</div>
 		
@@ -71,9 +71,44 @@
     <script src="lib/require.js"></script>
     <script src="lib/Emily.js"></script>
     <script src="lib/Olives.js"></script>
+    <script>
+    	define("Config", ["Store", "Olives/Transport"], function (Store, Transport) {
+    		// The application's configuration
+    		return new Store({
+    			Transport: new Transport(io, location.href),
+    			defaultPage: location.hash.substring(1) || "list",
+    			listUI: document.querySelector("div.suggestions"),
+    			formUI: document.querySelector("form.form-horizontal"),
+    			navbarUI: document.querySelector("body > div.navbar"),
+    			container: document.querySelector("#screens")
+    		});
+    		
+    	});
+    </script>
+    <script src="src/services.js"></script>
     <script src="src/navigation.js"></script>
-    <script src="src/newsuggestion.js"></script>
+    <script src="src/suggestionform.js"></script>
     <script src="src/listsuggestions.js"></script>
-    <script src="src/suggestions.js"></script>
+    <script>
+    	require(["ListSuggestions", "SuggestionForm", "Navigation", "Routing", "Config"],
+
+		/**
+		 * The application itself.
+		 * It creates each UI and makes them play together
+		 */
+		function (ListSuggestions, SuggestionForm, Navigation, Routing, Config) {
+			// Init the suggestion form
+			SuggestionForm();
+			
+			// Init the suggestions list
+			ListSuggestions();
+			
+			// Init the navigation bar
+			Navigation();
+			
+			// Set the default screen
+			Routing.get(Config.get("defaultPage"));
+		});
+    </script>
   </body>
 </html>

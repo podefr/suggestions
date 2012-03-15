@@ -3,15 +3,15 @@
  * Copyright(c) 2012 Ta•aut
  * MIT Licensed
  */
-define("ListSuggestions", ["Olives/OObject", "CouchDBStore", "Olives/Model-plugin"], 
+define("ListSuggestions", ["Olives/OObject", "CouchDBStore", "Olives/Model-plugin", "Olives/Event-plugin", "Routing", "Screens", "Config"], 
 		
-function (OObject, CouchDBStore, ModelPlugin) {
+function (OObject, CouchDBStore, ModelPlugin, EventPlugin, Routing, Screens, Config) {
 	
 	/**
 	 * Defines the list of suggestions UI.
 	 * It can be resynchronized to display different suggestions
 	 */
-	return function ListSuggestionsConstructor(transport) {
+	return function ListSuggestionsConstructor() {
 		
 		// The UI's model
 		var couchDBStore = new CouchDBStore(),
@@ -21,16 +21,32 @@ function (OObject, CouchDBStore, ModelPlugin) {
 		listSuggestions = new OObject(couchDBStore);
 		
 		// Adding a Model plugin to listSuggestion UI to bind it's dom with it's model
-		listSuggestions.plugins.add("model", new ModelPlugin(listSuggestions.model));
+		listSuggestions.plugins.addAll({
+			"model": new ModelPlugin(listSuggestions.model),
+			"event": new EventPlugin(listSuggestions)
+		});
 
 		// Set couchDBStore's transport
-		couchDBStore.setTransport(transport);
+		couchDBStore.setTransport(Config.get("Transport"));
 		
 		// Synchronize the store with the "id" view
 		listSuggestions.model.sync("suggestions", "list", "id");
 		
 		// Make the dom alive
-		listSuggestions.alive(document.querySelector("div.suggestions"));
+		listSuggestions.alive(Config.get("listUI"));
+		
+		// Declare a list route for displaying the list
+		Routing.set("list", function () {
+			Screens.show("list");
+		});
+		
+		// Declare the list UI
+		Screens.add("list", listSuggestions);
+		
+		// The edit action for editing a suggestion
+		listSuggestions.edit = function (event, node) {
+			Routing.get("edit", couchDBStore.get(node.dataset["model_id"]).id);
+		};
 		
 		// And return the new UI
 		return listSuggestions;
