@@ -8,4 +8,4 @@ Suggestions is based on:
  * Emily + Olives
  
  
-![screenshot](https://raw.github.com/podefr/suggestions/master/docs/screenshot.png)
+![screenshot](https://github.com/podefr/suggestions/raw/master/docs/snapshot.png)
