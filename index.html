@@ -42,15 +42,18 @@
 
     <div class="container" id="screens">
 
-	 	<form class="form-horizontal" data-event="listen:submit,upload">
+	 	<form class="form-horizontal" data-event="listen:submit, upload">
 			<fieldset>
-			<legend>New Suggestion</legend>
+			<legend data-texts="bind:innerHTML, legend">New Suggestion</legend>
 				<div class="control-group">
-						<textarea class="input-xlarge" id="description" rows="3"></textarea>
+						<input data-model="bind: value, author" class="input-xlarge" placeholder="What's your name?"/>
+				</div>
+				<div class="control-group">
+						<textarea class="input-xlarge" data-model="bind:value, desc" rows="3" placeholder="What do you suggest?"></textarea>
 				</div>
 			  <div class="form-action">
-			  	<button class="btn btn-primary" data-event="listen:click,cancel">Cancel</button>
-			  	<button type="submit" class="btn">Submit</button>
+			  	<button class="btn" data-event="listen:click,cancel">Cancel</button>
+			  	<button type="submit" class="btn btn-primary" data-texts="bind:innerHTML, submit">Submit</button>
 			  </div>
 			</fieldset>
 		</form>
@@ -58,7 +61,7 @@
 		<div class="suggestions" data-model="foreach">
 				<blockquote data-event="listen:click,edit">
 				<p data-model="bind:innerHTML, value.desc">I suggest that we debug this application!</p>
-				<small><span data-model="bind:innerHTML, value.author">podefr</span>, <span data-model="bind:innerHTML, value.date">march the 10th of 2012</span></small>
+				<small><span data-model="bind:innerHTML, value.author">podefr</span>, <span data-model="bind:formatDate, value.date">march the 10th of 2012</span></small>
 			</blockquote>
 		</div>
 		

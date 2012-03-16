@@ -22,7 +22,11 @@ function (OObject, CouchDBStore, ModelPlugin, EventPlugin, Routing, Screens, Con
 		
 		// Adding a Model plugin to listSuggestion UI to bind it's dom with it's model
 		listSuggestions.plugins.addAll({
-			"model": new ModelPlugin(listSuggestions.model),
+			"model": new ModelPlugin(listSuggestions.model, {
+				formatDate: function (date) {
+					this.innerHTML = new Date(date[0], date[1] , date[2]).toLocaleDateString();	
+				}
+			}),
 			"event": new EventPlugin(listSuggestions)
 		});
 
@@ -47,7 +51,7 @@ function (OObject, CouchDBStore, ModelPlugin, EventPlugin, Routing, Screens, Con
 		listSuggestions.edit = function (event, node) {
 			Routing.get("edit", couchDBStore.get(node.dataset["model_id"]).id);
 		};
-		
+
 		// And return the new UI
 		return listSuggestions;
 	};
