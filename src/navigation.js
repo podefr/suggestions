@@ -23,9 +23,11 @@ function (EventPlugin, OObject, Routing, Config) {
 		
 		// The function that messes with the .active class, triggered on location change
 		Routing.watch(function (menu) {
-			var selected = this.template.querySelector("li a[href='#" + menu + "']");
-			this.template.querySelector("li.active").classList.remove("active");
-			selected && selected.parentNode.classList.add("active");
+			var toActivate = this.template.querySelector("li a[href='#" + menu + "']"),
+				activated = this.template.querySelector("li.active");
+			
+			activated && activated.classList.remove("active");
+			toActivate && toActivate.parentNode.classList.add("active");
 		}, navigation);
 		
 		// The dom requires an EventPlugin to handle clicks

@@ -42,6 +42,10 @@ function (OObject, CouchDBStore, EventPlugin, Screens, Routing, Config) {
 		suggestionForm.cancel = function () {
 			Routing.get("list");
 		};
+		
+		suggestionForm.upload = function () {
+			console.log("upload", this.model.get());
+		};
 
 		// Make the dom alive
 		suggestionForm.alive(Config.get("formUI"));
