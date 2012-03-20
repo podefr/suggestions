@@ -26,10 +26,9 @@ If your database is located at 127.0.0.1, launch futon
 
 ```bash
 open http://127.0.0.1:5984/_utils
-``
+```
 
 Then create a database called suggestion with the following design document: https://github.com/podefr/suggestions/blob/master/docs/design_document.json
-
 When you're ready, go into the cloned suggestion dir, then:
 
 ```bash
