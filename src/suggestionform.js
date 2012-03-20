@@ -91,7 +91,7 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 				date:[
 				      date.getFullYear(),
 				      date.getMonth(),
-				      date.getDay(),
+				      date.getDate(),
 				      date.getHours(),
 				      date.getMinutes(),
 				      date.getSeconds()
@@ -116,8 +116,6 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 			couchDBStore.sync("suggestions", id);
 			Screens.show("form");
 		});
-		
-		cdb = couchDBStore;
 
 		return suggestionForm;
 		

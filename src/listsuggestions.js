@@ -34,7 +34,9 @@ function (OObject, CouchDBStore, ModelPlugin, EventPlugin, Routing, Screens, Con
 		couchDBStore.setTransport(Config.get("Transport"));
 		
 		// Synchronize the store with the "id" view
-		listSuggestions.model.sync("suggestions", "list", "id");
+		listSuggestions.model.sync("suggestions", "list", "id", {
+			descending: true
+		});
 		
 		// Make the dom alive
 		listSuggestions.alive(Config.get("listUI"));
