@@ -1,0 +1,9 @@
+{
+   "_id": "_design/list",
+   "views": {
+       "id": {
+           "map": "function (doc) { if (doc.desc) emit([doc._id, doc.author], {desc: doc.desc, date: doc.date, author: doc.author}) }"
+       }
+   },
+   "language": "javascript"
+}
