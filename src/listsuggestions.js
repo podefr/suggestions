@@ -54,6 +54,7 @@ function (OObject, CouchDBStore, ModelPlugin, EventPlugin, Routing, Screens, Con
 			Routing.get("edit", couchDBStore.get(node.dataset["model_id"]).id);
 		};
 
+		cdb = couchDBStore
 		// And return the new UI
 		return listSuggestions;
 	};

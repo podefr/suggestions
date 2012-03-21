@@ -12,6 +12,10 @@
       body {
         padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
       }
+      .disclaimer {
+       	border: 1px dotted #fdd;
+       	padding: 5px;
+      }
     </style>
     <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
   </head>
@@ -46,22 +50,24 @@
 			<fieldset>
 			<legend data-texts="bind:innerHTML, legend">New Suggestion</legend>
 				<div class="control-group">
-					<label data-texts="bind: innerHTML, errorAuthor"></label>
 					<input data-model="bind: value, author" class="input-xlarge" placeholder="What's your name?"/>
+					<span class="help-inline hidden" data-texts="bind: removeClass, errorAuthor, hidden">This field is required!</span>
 				</div>
 				<div class="control-group">
-					<label data-texts="bind: innerHTML, errorDesc"></label>
 					<textarea class="input-xlarge" data-model="bind:value, desc" rows="3" placeholder="What do you suggest?"></textarea>
+					<span class="help-inline hidden" data-texts="bind: removeClass, errorDesc, hidden">This field is required!</span>
 				</div>
 			  <div class="form-action">
 			  	<button class="btn" data-event="listen:click,cancel">Cancel</button>
-			  	<button type="submit" class="btn btn-primary" data-texts="bind: toggleClass, error" data-texts="bind:innerHTML, submit" >Submit</button>
+			  	<button type="submit" class="btn btn-primary" data-texts="bind: addClass, error, btn-danger" data-texts="bind:innerHTML, submit" >Submit</button>
 			  </div>
 			</fieldset>
 		</form>
 		
+		<p class="disclaimer">This suggestions page is a demonstration page. Under no circumstances will Taïaut be responsible or liable in any way for any content published on this suggestions page, whether by Taïaut or a third party. We reserve the right to remove any content without warning.</p>
+		
 		<div class="suggestions" data-model="foreach">
-				<blockquote data-event="listen:click, edit">
+			<blockquote data-event="listen:click, edit">
 				<p data-model="bind:innerHTML, value.desc">I suggest that we debug this application!</p>
 				<small><span data-model="bind:innerHTML, value.author">podefr</span>, <span data-model="bind:formatDate, value.date">march the 10th of 2012</span></small>
 			</blockquote>

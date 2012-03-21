@@ -19,9 +19,8 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 		texts = new Store({
 			legend: "New Suggestion",
 			submit: "Suggest",
-			errorAuthor: "",
-			errorDesc: "",
-			error: false,
+			errorAuthor: false,
+			errorDesc: false
 		}),
 		
 		// Create a newSuggestion UI, based on an OObject that will have the couchDBStore as Model
@@ -35,8 +34,11 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 			"model": new ModelPlugin(couchDBStore),
 			"event": new EventPlugin(suggestionForm),
 			"texts": new ModelPlugin(texts, {
-				toggleClass: function (error) {
-					error ? this.classList.add("btn-danger") : this.classList.remove("btn-danger");
+				addClass: function (value, className) {
+					value ? this.classList.add(className) : this.classList.remove(className);
+				},
+				removeClass: function (value, className) {
+					!value ? this.classList.add(className) : this.classList.remove(className);
 				}
 			})
 		});
@@ -56,16 +58,15 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 		
 		suggestionForm.upload = function (event) {
 			if (!couchDBStore.get("desc") || !couchDBStore.get("author")) {
-				texts.set("errorDesc", !couchDBStore.get("desc") ? "Don't you have something to suggest?": "");
-				texts.set("errorAuthor", !couchDBStore.get("author") ? "We need to know how you want us to call you" : "");
+				texts.set("errorDesc", !couchDBStore.get("desc"));
+				texts.set("errorAuthor", !couchDBStore.get("author"));
 				texts.set("error", true);
 			} else {
 				couchDBStore.upload();
 				couchDBStore.unsync();
 				Routing.get("list");
-				event.preventDefault();
 			}
-
+			event.preventDefault();
 		};
 
 		// Make the dom alive
@@ -80,9 +81,9 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 			texts.reset({
 				"legend": "New Suggestion",
 				"submit": "Suggest",
-				"errorAuthor": "",
-				"errorDesc": "",
-				error: false
+				"errorAuthor": false,
+				"errorDesc": false,
+				"error": false
 			});
 			couchDBStore.unsync();
 			couchDBStore.reset({
@@ -108,9 +109,9 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 			texts.reset({
 				"legend": "Edit Suggestion",
 				"submit": "Save",
-				"errorAuthor": "",
-				"errorDesc": "",
-				error: false
+				"errorAuthor": false,
+				"errorDesc": false,
+				"error": false
 			});
 			couchDBStore.unsync();
 			couchDBStore.sync("suggestions", id);
