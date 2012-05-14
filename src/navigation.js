@@ -3,9 +3,9 @@
  * Copyright(c) 2012 Ta•aut
  * MIT Licensed
  */
-define("Navigation", ["Olives/Event-plugin", "Olives/OObject", "Routing", "Config"],
+define("Navigation", ["Olives/Event-plugin", "Olives/OObject", "Routing", "Config", "Olives/BrowserID"],
 		
-function (EventPlugin, OObject, Routing, Config) {
+function (EventPlugin, OObject, Routing, Config, BrowserID) {
 	
 	/**
 	 * Defines the navigation bar UI
@@ -14,11 +14,22 @@ function (EventPlugin, OObject, Routing, Config) {
 	return function NavigationConstructor() {
 		
 		// An OObject based UI
-		var navigation = new OObject;
+		var navigation = new OObject,
+			browserID = new BrowserID;
+		
+		browserID.setTransport(Config.get("Transport"));
 		
 		// The function called by the navigation bar when a menu is clicked
 		navigation.show = function (event, node) {
 			Routing.get(node.href.split("#").pop());
+		};
+		
+		navigation.login = function (event, node) {
+			browserID.login(function (result) {
+				if (result.status == "okay") {
+					node.innerHTML = result.email;
+				}
+			});
 		};
 		
 		// The function that messes with the .active class, triggered on location change

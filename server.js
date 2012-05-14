@@ -32,8 +32,9 @@ http = require('http');
 
 http.globalAgent.maxSockets = Infinity;
 
-// require olives. should be require("olives") once the npm is published
-var olives = require("olives");
+var olives = require("olives"),
+BrowserID = require("olives-browserid-handler");
 // Register the instance of socket.io
 // This API will change until the final release
 olives.registerSocketIO(io);
+olives.handlers.set("BrowserID", BrowserID.handler)
