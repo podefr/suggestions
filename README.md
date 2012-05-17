@@ -6,6 +6,7 @@ Suggestions is based on:
 
  * bootstrap-responsive by Twitter
  * socket.io and nodeJS
+ * connect for the middleware
  * CouchDB
  * Emily + Olives
  

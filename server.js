@@ -5,18 +5,24 @@
  */
 
 // Required middleware
-var Connect = require("connect"),
+var connect = require("connect"),
 	http = require("http"),
 	io = require("socket.io"),
 	olives = require("olives"),
-	browserID = require("olives-browserid-handler");
+	browserID = require("olives-browserid-handler"),
+	passport = require("passport");
 
-// Configuring the middleware
-var connect = Connect()
-	.use(Connect.static(__dirname + "/"));
 
-var app = http.createServer(connect).listen(8000);
+http.globalAgent.maxSockets = Infinity;
 
-olives.registerSocketIO(io.listen(app));
+olives.registerSocketIO(io.listen(http.createServer(connect()
+		.use(connect.static(__dirname + "/public"))
+		.use(connect.responseTime())
+		.use(connect.cookieParser('si'))
+		.use(connect.session({ secret: "not so secret when it's on github" }))
+		.use(passport.initialize())
+		.use(passport.session()))
+	.listen(8000)));
+		
 
 olives.handlers.set("BrowserID", browserID.handler);
