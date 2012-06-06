@@ -3,9 +3,9 @@
  * Copyright(c) 2012 Ta•aut
  * MIT Licensed
  */
-define("ListSuggestions", ["Olives/OObject", "CouchDBStore", "Olives/Model-plugin", "Olives/Event-plugin", "Routing", "Screens", "Config"], 
+define("ListSuggestions", ["Olives/OObject", "CouchDBStore", "Olives/Model-plugin", "Olives/Event-plugin", "Config", "Services"], 
 		
-function (OObject, CouchDBStore, ModelPlugin, EventPlugin, Routing, Screens, Config) {
+function (OObject, CouchDBStore, ModelPlugin, EventPlugin, Config, Services) {
 	
 	/**
 	 * Defines the list of suggestions UI.
@@ -42,16 +42,16 @@ function (OObject, CouchDBStore, ModelPlugin, EventPlugin, Routing, Screens, Con
 		listSuggestions.alive(Config.get("listUI"));
 		
 		// Declare a list route for displaying the list
-		Routing.set("list", function () {
-			Screens.show("list");
+		Services.routing.set("list", function () {
+			Services.screens.show("list");
 		});
 		
 		// Declare the list UI
-		Screens.add("list", listSuggestions);
+		Services.screens.add("list", listSuggestions);
 		
 		// The edit action for editing a suggestion
 		listSuggestions.edit = function (event, node) {
-			Routing.get("edit", couchDBStore.get(node.dataset["model_id"]).id);
+			Services.routing.get("edit", couchDBStore.get(node.dataset["model_id"]).id);
 		};
 
 		cd = couchDBStore;

@@ -3,9 +3,9 @@
  * Copyright(c) 2012 Ta•aut
  * MIT Licensed
  */
-define("Navigation", ["Olives/Event-plugin", "Olives/OObject", "Routing", "Config", "Olives/BrowserID"],
+define("Navigation", ["Olives/Event-plugin", "Olives/OObject", "Config", "Olives/BrowserID", "Services"],
 		
-function (EventPlugin, OObject, Routing, Config, BrowserID) {
+function (EventPlugin, OObject, Config, BrowserID, Services) {
 	
 	/**
 	 * Defines the navigation bar UI
@@ -21,7 +21,7 @@ function (EventPlugin, OObject, Routing, Config, BrowserID) {
 		
 		// The function called by the navigation bar when a menu is clicked
 		navigation.show = function (event, node) {
-			Routing.get(node.href.split("#").pop());
+			Services.routing.get(node.href.split("#").pop());
 		};
 		
 		navigation.login = function (event, node) {
@@ -33,7 +33,7 @@ function (EventPlugin, OObject, Routing, Config, BrowserID) {
 		};
 		
 		// The function that messes with the .active class, triggered on location change
-		Routing.watch(function (menu) {
+		Services.routing.watch(function (menu) {
 			var toActivate = this.template.querySelector("li a[href='#" + menu + "']"),
 				activated = this.template.querySelector("li.active");
 			

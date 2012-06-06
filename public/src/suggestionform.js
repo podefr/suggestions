@@ -3,9 +3,9 @@
  * Copyright(c) 2012 Ta•aut
  * MIT Licensed
  */
-define("SuggestionForm", ["Olives/OObject", "CouchDBStore", "Store", "Olives/Model-plugin", "Olives/Event-plugin", "Screens", "Routing", "Config"], 
+define("SuggestionForm", ["Olives/OObject", "CouchDBStore", "Store", "Olives/Model-plugin", "Olives/Event-plugin", "Config", "Services"], 
 		
-function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routing, Config) {
+function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Config, Services) {
 	
 	/**
 	 * Defines the suggestion form. 
@@ -52,7 +52,7 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 		// The action on the cancel
 		suggestionForm.cancel = function () {
 			couchDBStore.unsync();
-			Routing.get("list");
+			Services.routing.get("list");
 			event.preventDefault();
 		};
 		
@@ -64,7 +64,7 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 			} else {
 				couchDBStore.upload();
 				couchDBStore.unsync();
-				Routing.get("list");
+				Services.routing.get("list");
 			}
 			event.preventDefault();
 		};
@@ -73,10 +73,10 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 		suggestionForm.alive(Config.get("formUI"));
 		
 		// Declare the screen
-		Screens.add("form", suggestionForm);
+		Services.screens.add("form", suggestionForm);
 		
 		// Declare the route new for creating a new suggestion
-		Routing.set("new", function () {
+		Services.routing.set("new", function () {
 			var date = new Date();
 			texts.reset({
 				"legend": "New Suggestion",
@@ -101,11 +101,11 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 			// The document id is the time: self incrementing unique id!
 			// This id could be base62 encode to reduce it by 5 chars to save important bytes in couchdb
 			couchDBStore.sync("suggestions", date.getTime()+"");
-			Screens.show("form");
+			Services.screens.show("form");
 		});
 		
 		// Declare the route edit for editing a suggestion
-		Routing.set("edit", function (id) {
+		Services.routing.set("edit", function (id) {
 			texts.reset({
 				"legend": "Edit Suggestion",
 				"submit": "Save",
@@ -115,7 +115,7 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Screens, Routi
 			});
 			couchDBStore.unsync();
 			couchDBStore.sync("suggestions", id);
-			Screens.show("form");
+			Services.screens.show("form");
 		});
 
 		return suggestionForm;

@@ -98,8 +98,9 @@
     <script src="lib/Emily.js"></script>
     <script src="lib/Olives.js"></script>
     <script src="lib/BrowserID.js"></script>
+    <script src="lib/Olives-services.js"></script>
     <script>
-    	define("Config", ["Store", "Olives/Transport"], function (Store, Transport) {
+    	define("Config", ["Store", "Olives/Transport", ], function (Store, Transport) {
     		// The application's configuration
     		return new Store({
     			Transport: new Transport(io, location.href),
@@ -117,13 +118,13 @@
     <script src="src/suggestionform.js"></script>
     <script src="src/listsuggestions.js"></script>
     <script>
-    	require(["ListSuggestions", "SuggestionForm", "Navigation", "Routing", "Config"],
+    	require(["ListSuggestions", "SuggestionForm", "Navigation", "Config", "Services"],
 
 		/**
 		 * The application itself.
 		 * It creates each UI and makes them play together
 		 */
-		function (ListSuggestions, SuggestionForm, Navigation, Routing, Config) {
+		function (ListSuggestions, SuggestionForm, Navigation, Config, Services) {
 			// Init the suggestion form
 			SuggestionForm();
 			
@@ -133,8 +134,11 @@
 			// Init the navigation bar
 			Navigation();
 			
+			// Init Screens
+			Services.screens.setDestination(Config.get("container"));
+			
 			// Set the default screen
-			Routing.get(Config.get("defaultPage"));
+			Services.routing.get(Config.get("defaultPage"));
 		});
     </script>
   </body>
