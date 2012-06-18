@@ -34,7 +34,7 @@ function (OObject, CouchDBStore, ModelPlugin, EventPlugin, Config, Services) {
 		couchDBStore.setTransport(Config.get("Transport"));
 		
 		// Synchronize the store with the "id" view
-		listSuggestions.model.sync("suggestions", "list", "id", {
+		listSuggestions.model.sync("suggestions", "list", "_view/id", {
 			descending: true
 		});
 		
@@ -54,7 +54,8 @@ function (OObject, CouchDBStore, ModelPlugin, EventPlugin, Config, Services) {
 			Services.routing.get("edit", couchDBStore.get(node.dataset["model_id"]).id);
 		};
 
-		cd = couchDBStore;
+		cd = new CouchDBStore;
+		cd.setTransport(Config.get("Transport"));
 		
 		// And return the new UI
 		return listSuggestions;
