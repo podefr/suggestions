@@ -3,11 +3,12 @@
  * Copyright(c) 2012 Ta•aut
  * MIT Licensed
  */
-define("LoginForm", ["Olives/OObject", "Config", "Services", "Olives/Event-plugin", "Olives/Model-plugin"],
+define("LoginForm", ["Olives/OObject", "Config", "Services", "Olives/Event-plugin", "Olives/Model-plugin", "Store"],
 
-function (OObject, Config, Services, EventPlugin, ModelPlugin) {
+function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 	
-	var loginForm = new OObject;
+	var loginForm = new OObject(new Store({name:"", password:""})),
+		transport = Config.get("Transport");
 	
 	loginForm.plugins.addAll({
 		"event": new EventPlugin(loginForm),
@@ -15,9 +16,18 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin) {
 	});
 	
 	loginForm.login = function login() {
-		console.log(loginForm.model.toJSON())
+		transport.request("Login", {
+			name: loginForm.model.get("name"),
+			password: loginForm.model.get("password")
+		}, function (result) {
+			if (result.login == "okay") {
+				console.log("logged in as", result.name);
+			} else {
+				console.log("login failed");
+			}
+		});
 	};
-	
+
 	loginForm.alive(Config.get("loginFormUI"));
 	
 	Services.screens.add("login", loginForm);

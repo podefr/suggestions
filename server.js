@@ -46,13 +46,11 @@ var io = socketIO.listen(http.createServer(connect()
 		next();
 	})
 	.use(connect.static(__dirname + "/public"))
-).listen(8000), {log:false});
+).listen(8000), {log:true});
 
 http.globalAgent.maxSockets = Infinity;
 
 olives.registerSocketIO(io);
-
-olives.handlers.set("BrowserID", browserID.handler);
 
 olives.config.update("CouchDB", "secure", function (reqData) {
 
@@ -68,6 +66,10 @@ olives.config.update("CouchDB", "secure", function (reqData) {
 	});
 });
 
-olives.handlers.set("Login", function (data) {
-	console.log(data);
+olives.handlers.set("Login", function (json, onEnd) {
+	if (json.name == "guest" && json.password == "guest") {
+		onEnd({login:"okay", name:"guest"});
+	} else {
+		onEnd({login:"failed", reason:"name or password invalid"});
+	}
 });

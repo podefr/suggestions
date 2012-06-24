@@ -3,9 +3,9 @@
  * Copyright(c) 2012 Ta•aut
  * MIT Licensed
  */
-define("Navigation", ["Olives/Event-plugin", "Olives/OObject", "Config", "Olives/BrowserID", "Services"],
+define("Navigation", ["Olives/Event-plugin", "Olives/OObject", "Config", "Services"],
 		
-function (EventPlugin, OObject, Config, BrowserID, Services) {
+function (EventPlugin, OObject, Config, Services) {
 	
 	/**
 	 * Defines the navigation bar UI
@@ -14,10 +14,7 @@ function (EventPlugin, OObject, Config, BrowserID, Services) {
 	return function NavigationConstructor() {
 		
 		// An OObject based UI
-		var navigation = new OObject,
-			browserID = new BrowserID;
-		
-		browserID.setTransport(Config.get("Transport"));
+		var navigation = new OObject;
 		
 		// The function called by the navigation bar when a menu is clicked
 		navigation.show = function (event, node) {
