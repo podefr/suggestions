@@ -10,7 +10,6 @@ var connect = require("connect"),
 	http = require("http"),
 	socketIO = require("socket.io"),
 	olives = require("olives"),
-	browserID = require("olives-browserid-handler"),
 	cookie = require("cookie"),
 	RedisStore = require("connect-redis")(connect),
 	sessionStore = new RedisStore;
@@ -34,17 +33,16 @@ var io = socketIO.listen(http.createServer(connect()
 		}
 	}))
 	.use(function (req, res, next) {
-
-		 browserID.config.onUserLogin = function (data) {
-			 sessionStore.get(req.sessionID, function (err, session) {
-					if (err) {
-						throw new Error(err);
-					} else {
-						session.auth = JSON.parse(data);
-						sessionStore.set(req.sessionID, session);
-					}
-				});			 
-		 };
+/*
+		 sessionStore.get(req.sessionID, function (err, session) {
+				if (err) {
+					throw new Error(err);
+				} else {
+					session.auth = JSON.parse(data);
+					sessionStore.set(req.sessionID, session);
+				}
+			});			 
+*/
 		next();
 	})
 	.use(connect.static(__dirname + "/public"))
@@ -68,4 +66,8 @@ olives.config.update("CouchDB", "secure", function (reqData) {
 			if (data.auth) console.log(data.auth.email, "is logged in")
 		}
 	});
+});
+
+olives.handlers.set("Login", function (data) {
+	console.log(data);
 });

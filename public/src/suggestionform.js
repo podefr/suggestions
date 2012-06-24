@@ -66,11 +66,10 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Config, Servic
 				couchDBStore.unsync();
 				Services.routing.get("list");
 			}
-			event.preventDefault();
 		};
 
 		// Make the dom alive
-		suggestionForm.alive(Config.get("formUI"));
+		suggestionForm.alive(Config.get("newSuggestionFormUI"));
 		
 		// Declare the screen
 		Services.screens.add("form", suggestionForm);

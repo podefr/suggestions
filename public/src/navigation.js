@@ -24,14 +24,6 @@ function (EventPlugin, OObject, Config, BrowserID, Services) {
 			Services.routing.get(node.href.split("#").pop());
 		};
 		
-		navigation.login = function (event, node) {
-			browserID.login(function (result) {
-				if (result.status == "okay") {
-					node.innerHTML = result.email;
-				}
-			});
-		};
-		
 		// The function that messes with the .active class, triggered on location change
 		Services.routing.watch(function (menu) {
 			var toActivate = this.template.querySelector("li a[href='#" + menu + "']"),

@@ -13,10 +13,6 @@
       body {
         padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
       }
-      .disclaimer {
-       	border: 1px dotted #fdd;
-       	padding: 5px;
-      }
       blockquote {
       	cursor:pointer;
       }
@@ -37,22 +33,18 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
           </a>
           <a class="brand" href="#">Suggestions</a>
           <div class="nav-collapse">
             <ul class="nav">
               <li class="active"><a href="#list" data-event="listen:click,show">List</a></li>
               <li><a href="#new" data-event="listen:click,show">New suggestion</a></li>
+               <li><a href="#login" data-event="listen:click,show">Login</a></li>
               <form class="navbar-search pull right" action>
               		<input type="text" class="search-query span2" placeholder="search..." />
               </form>
              </ul>
-             <ul class="nav pull-right">
-	            <li class="divider-vertical"></li>
-	            <li><a href="#" id="browserid" title="Sign-in with BrowserID" data-event="listen: click,login">
-			  		<img src="img/sign_in_grey.png" alt="Sign in">
-				</a></li>
-            </ul>
           </div><!--/.nav-collapse -->
         </div>
       </div>
@@ -60,7 +52,7 @@
 
     <div class="container" id="screens">
 
-	 	<form class="form-horizontal" data-event="listen:submit, upload">
+	 	<form class="form-horizontal newsuggestion" data-event="listen:submit, upload" action>
 			<fieldset>
 			<legend data-texts="bind:innerHTML, legend">New Suggestion</legend>
 				<div class="control-group">
@@ -78,8 +70,21 @@
 			</fieldset>
 		</form>
 		
-		<p class="disclaimer">This suggestions page is a demonstration page. Under no circumstances will Taïaut be responsible or liable in any way for any content published on this suggestions page, whether by Taïaut or a third party. We reserve the right to remove any content without warning.</p>
-		
+		<form class="form-horizontal login" data-event="listen:submit, login" action>
+			<fieldset>
+			<legend>Login</legend>	
+				<div class="control-group">
+					<input placeholder="Name" data-model="bind: value, name"/>
+				</div>
+				<div class="control-group">
+					<input type="password" placeholder="Password" data-model="bind: value, password"/>
+				</div>
+				<div class="form-action">
+					<button class="btn btn-primary">Login</button>
+				</div>
+			</fieldset>
+		</form>
+
 		<div class="suggestions" data-model="foreach">
 			<blockquote data-event="listen:click, edit">
 				<p data-model="bind:innerHTML, value.desc">I suggest that we debug this application!</p>
@@ -106,7 +111,8 @@
     			Transport: new Transport(io, location.href),
     			defaultPage: location.hash.substring(1) || "list",
     			listUI: document.querySelector("div.suggestions"),
-    			formUI: document.querySelector("form.form-horizontal"),
+    			newSuggestionFormUI: document.querySelector("form.newsuggestion"),
+    			loginFormUI: document.querySelector("form.login"),
     			navbarUI: document.querySelector("body > div.navbar"),
     			container: document.querySelector("#screens")
     		});
@@ -117,14 +123,15 @@
     <script src="src/navigation.js"></script>
     <script src="src/suggestionform.js"></script>
     <script src="src/listsuggestions.js"></script>
+    <script src="src/loginform.js"></script>
     <script>
-    	require(["ListSuggestions", "SuggestionForm", "Navigation", "Config", "Services"],
+    	require(["ListSuggestions", "SuggestionForm", "LoginForm", "Navigation", "Config", "Services"],
 
 		/**
 		 * The application itself.
 		 * It creates each UI and makes them play together
 		 */
-		function (ListSuggestions, SuggestionForm, Navigation, Config, Services) {
+		function (ListSuggestions, SuggestionForm, LoginForm, Navigation, Config, Services) {
 			// Init the suggestion form
 			SuggestionForm();
 			
