@@ -38,7 +38,7 @@ CouchDBTools.requirejs(["CouchDBUsers", "CouchDBUsers", "Transport"], function (
 				}
 			}))
 			.use(connect.static(__dirname + "/public"))
-		).listen(8000), {log:false});
+		).listen(8000), {log:true});
 
 		http.globalAgent.maxSockets = Infinity;
 
@@ -61,7 +61,7 @@ CouchDBTools.requirejs(["CouchDBUsers", "CouchDBUsers", "Transport"], function (
 						} else {
 							session.auth = json.name+":"+json.password;
 							sessionStore.set(sessionID, session);
-							onEnd({login:"okay", name:"guest"});
+							onEnd({login:"okay", name:json.name});
 						}
 					});
 					
