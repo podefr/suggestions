@@ -17,9 +17,8 @@ var connect = require("connect"),
 CouchDBTools.requirejs(["CouchDBUsers", "CouchDBUsers", "Transport"], function (CouchDBUsers, CouchDBUser, Transport) {
 	
 	var Users = new CouchDBUsers;
-	
 	Users.setTransport(new Transport(olives.handlers));
-
+	
 	var io = socketIO.listen(http.createServer(connect()
 			.use(connect.responseTime())
 			.use(function (req, res, next) {
@@ -38,69 +37,42 @@ CouchDBTools.requirejs(["CouchDBUsers", "CouchDBUsers", "Transport"], function (
 					path: "/"
 				}
 			}))
-			.use(function (req, res, next) {
-		/*
-				 sessionStore.get(req.sessionID, function (err, session) {
-						if (err) {
-							throw new Error(err);
-						} else {
-							session.auth = JSON.parse(data);
-							sessionStore.set(req.sessionID, session);
-						}
-					});			 
-		*/
-				next();
-			})
 			.use(connect.static(__dirname + "/public"))
-		).listen(8000), {log:true});
+		).listen(8000), {log:false});
 
 		http.globalAgent.maxSockets = Infinity;
 
 		olives.registerSocketIO(io);
-
-		olives.config.update("CouchDB", "secure", function (reqData, callback) {
-			//var cookieJSON = cookie.parse(reqData.handshake.headers.cookie);
-
-			/*// I don't like the split but is there a better solution?
-			sessionStore.get(cookieJSON["suggestions.sid"].split("s:")[1].split(".")[0], function (err, data) {
-				if (err) {
-					throw new Error(err);
-				} else {
-					if (data.auth) {
-						reqData.auth = data.auth;
-						callback(reqData);
-					} else {
-						return false;
-					}
-				}
-			});*/
-		});
-
+		
+		olives.config.update("CouchDB", "sessionStore", sessionStore);
+		
 		olives.handlers.set("Login", function (json, onEnd) {
-			
+
 			Users.login(json.name, json.password).then(function (result) {
+				var result = JSON.parse(result);
+
+				if (!result.error) {		
+					var cookieJSON = cookie.parse(json.handshake.headers.cookie),
+						sessionID = cookieJSON["suggestions.sid"].split("s:")[1].split(".")[0];
+	
+					sessionStore.get(sessionID, function (err, session) {
+						if (err) {
+							throw new Error(err);
+						} else {
+							session.auth = json.name+":"+json.password;
+							sessionStore.set(sessionID, session);
+							onEnd({login:"okay", name:"guest"});
+						}
+					});
+					
+				} else {
+					onEnd({login:"failed", reason:"name or password invalid"});
+				}
+			}, function (result) {
 				console.log(result)
 			});
-			
-			/*if (json.name == "couchdb" && json.password == "couchdb") {
-				
-				var cookieJSON = cookie.parse(json.handshake.headers.cookie),
-					sessionID = cookieJSON["suggestions.sid"].split("s:")[1].split(".")[0];
-
-				sessionStore.get(sessionID, function (err, session) {
-					if (err) {
-						throw new Error(err);
-					} else {
-						session.auth = json.name+":"+json.password;
-						sessionStore.set(sessionID, session);
-						onEnd({login:"okay", name:"guest"});
-					}
-				});
-			} else {
-				onEnd({login:"failed", reason:"name or password invalid"});
-			}*/
 		});
-		
+
 });
 
 process.on('uncaughtException', function (error) {
