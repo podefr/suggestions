@@ -52,7 +52,7 @@
 
     <div class="container" id="screens">
 
-	 	<form class="form-horizontal newsuggestion" data-event="listen:submit, upload" action>
+	 	<form class="form-horizontal newsuggestion">
 			<fieldset>
 			<legend data-texts="bind:innerHTML, legend">New Suggestion</legend>
 				<div class="control-group">
@@ -64,8 +64,8 @@
 					<span class="help-inline hidden" data-texts="bind: removeClass, errorDesc, hidden">This field is required!</span>
 				</div>
 			  <div class="form-action">
-			  	<button class="btn" data-event="listen:click,cancel">Cancel</button>
-			  	<button type="submit" class="btn btn-primary" data-texts="bind: addClass, error, btn-danger" data-texts="bind:innerHTML, submit" >Submit</button>
+			  	<button class="btn" type="button" data-event="listen:click,cancel">Cancel</button>
+			  	<button type="button" class="btn btn-primary" data-event="listen: click, upload" data-texts="bind: addClass, error, btn-danger; bind:innerHTML, submit" >Submit</button>
 			  </div>
 			</fieldset>
 		</form>
@@ -79,9 +79,12 @@
 				<div class="control-group">
 					<input type="password" placeholder="Password" data-model="bind: value, password"/>
 				</div>
+				<div class="control-group hidden" data-model="bind: removeClass, mode, hidden">
+					<input type="password" placeholder="Confirm password" data-model="bind: value, confirmPassword" />
+				</div>
 				<div class="form-action">
-					<button class="btn btn-primary" type="button"  data-event="listen: click, login">Login</button>
-					<button class="btn" type="button" data-event="listen: click, create">Create</button>
+					<button class="btn btn-primary" type="button" data-model="bind: innerHTML, loginBtnTxt, hidden" data-event="listen: click, login">Login</button>
+					<button class="btn" type="button" data-model="bind: innerHTML, createBtnTxt, hidden" data-event="listen: click, toggleCreateMode">Create Account</button>
 				</div>
 			</fieldset>
 		</form>

@@ -12,10 +12,18 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 	
 	loginForm.plugins.addAll({
 		"event": new EventPlugin(loginForm),
-		"model": new ModelPlugin(loginForm.model)
+		"model": new ModelPlugin(loginForm.model, {
+			addClass: function (value, className) {
+				value ? this.classList.add(className) : this.classList.remove(className);
+			},
+			removeClass: function (value, className) {
+				!value ? this.classList.add(className) : this.classList.remove(className);
+			}
+		})
 	});
 	
 	loginForm.login = function login() {
+		
 		transport.request("Login", {
 			name: loginForm.model.get("name"),
 			password: loginForm.model.get("password")
@@ -28,15 +36,11 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 		});
 	};
 	
-	loginForm.create = function create(event) {
-		console.log("create")
-		/**
-		transport.request("CreateAccount", {
-			name: loginForm.model.get("name"),
-			password: loginForm.model.get("password")
-		}, function (result) {
-			console.log(result);
-		});*/
+	loginForm.toggleCreateMode = function toggleCreateMode(event) {
+		var current = this.model.get("mode");
+		this.model.set("mode", !current);
+		this.model.set("createBtnTxt", current ? "Create account" : "Cancel");
+		this.model.set("loginBtnTxt", current ? "Login" : "Create");	
 	};
 
 	loginForm.alive(Config.get("loginFormUI"));
