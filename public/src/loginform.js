@@ -27,6 +27,17 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 			}
 		});
 	};
+	
+	loginForm.create = function create(event) {
+		console.log("create")
+		/**
+		transport.request("CreateAccount", {
+			name: loginForm.model.get("name"),
+			password: loginForm.model.get("password")
+		}, function (result) {
+			console.log(result);
+		});*/
+	};
 
 	loginForm.alive(Config.get("loginFormUI"));
 	

@@ -70,7 +70,7 @@
 			</fieldset>
 		</form>
 		
-		<form class="form-horizontal login" data-event="listen:submit, login" action>
+		<form class="form-horizontal login">
 			<fieldset>
 			<legend>Login</legend>	
 				<div class="control-group">
@@ -80,7 +80,8 @@
 					<input type="password" placeholder="Password" data-model="bind: value, password"/>
 				</div>
 				<div class="form-action">
-					<button class="btn btn-primary">Login</button>
+					<button class="btn btn-primary" type="button"  data-event="listen: click, login">Login</button>
+					<button class="btn" type="button" data-event="listen: click, create">Create</button>
 				</div>
 			</fieldset>
 		</form>
