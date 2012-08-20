@@ -2,3 +2,9 @@
 .settings/
 .project
 */.DS_Store
+suggestions.sublime-project
+suggestions.sublime-workspace
+.DS_Store
+couchdb.stderr
+couchdb.stdout
+dump.rdb

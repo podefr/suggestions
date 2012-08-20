@@ -7,7 +7,7 @@ define("LoginForm", ["Olives/OObject", "Config", "Services", "Olives/Event-plugi
 
 function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 	
-	var loginForm = new OObject(new Store({name:"", password:""})),
+	var loginForm = new OObject(new Store({name:"", password:"", confirmPassword: ""})),
 		transport = Config.get("Transport");
 	
 	loginForm.plugins.addAll({
@@ -23,17 +23,32 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 	});
 	
 	loginForm.login = function login() {
+		var name = this.model.get("name"),
+			password = this.model.get("password"),
+			confirmPassword = this.model.get("confirmPassword"),
+			mode = this.model.get("mode");
 		
-		transport.request("Login", {
-			name: loginForm.model.get("name"),
-			password: loginForm.model.get("password")
-		}, function (result) {
-			if (result.login == "okay") {
-				console.log("logged in as", result.name);
-			} else {
-				console.log("login failed");
-			}
-		});
+		if ( mode 
+			 && ((password != confirmPassword)
+			    || !password)) {
+			
+			console.log("password pas bon", this.model.get("password"), this.model.toJSON())
+			return false;
+		} else {
+			
+			transport.request("Login", {
+				name: name,
+				password: password,
+				mode: mode ? "create" : "login"
+			}, function (result) {
+				if (result.login == "okay") {
+					console.log("logged in as", result.name);
+				} else {
+					console.log("login failed");
+				}
+			});
+			return true;
+		}
 	};
 	
 	loginForm.toggleCreateMode = function toggleCreateMode(event) {
