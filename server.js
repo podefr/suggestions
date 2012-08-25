@@ -15,12 +15,12 @@ var connect = require("connect"),
 	sessionStore = new RedisStore;
 
 CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Transport) {
-	
+
 	var User = new CouchDBUser,
 		transport = new Transport(olives.handlers);
-	
+
 	User.setTransport(transport);
-	
+
 	var io = socketIO.listen(http.createServer(connect()
 			.use(connect.responseTime())
 			.use(function (req, res, next) {
@@ -29,7 +29,7 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 				next();
 			})
 			.use(connect.cookieParser())
-			.use(connect.session({ 
+			.use(connect.session({
 				secret: "not so secret when it's on github",
 				key: "suggestions.sid",
 				store: sessionStore,
@@ -40,37 +40,40 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 				}
 			}))
 			.use(connect.static(__dirname + "/public"))
-		).listen(8000), {log:false});
+		).listen(8000), {log:true});
 
 		http.globalAgent.maxSockets = Infinity;
 
 		olives.registerSocketIO(io);
-		
+
 		olives.config.update("CouchDB", "sessionStore", sessionStore);
-		
+
 		olives.handlers.set("Login", function (json, onEnd) {
 
 			if (json.mode == "create") {
-				
+
 				User.unsync();
 				User.set("password", json.password);
 				User.set("name", json.name);
-				
+
 				User.create().then(function (si) {
 					console.log("yes", si);
 				}, function (si) {
 					console.log("no", si);
-				});		
-				
+				});
+
 			} else {
-				
-				User.login(json.name, json.password).then(function (result) {
+
+				User.set("name", json.name);
+				User.set("password", json.password);
+
+				User.login().then(function (result) {
 					var result = JSON.parse(result);
 
-					if (!result.error) {		
+					if (!result.error) {
 						var cookieJSON = cookie.parse(json.handshake.headers.cookie),
 							sessionID = cookieJSON["suggestions.sid"].split("s:")[1].split(".")[0];
-		
+
 						sessionStore.get(sessionID, function (err, session) {
 							if (err) {
 								throw new Error(err);
@@ -80,15 +83,15 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 								onEnd({login:"okay", name:json.name});
 							}
 						});
-						
+
 					} else {
 						onEnd({login:"failed", reason:"name or password invalid"});
 					}
 				}, function (result) {
 					console.log(result)
 				});
-				
-				
+
+
 			}
 
 		});
@@ -98,4 +101,4 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 process.on('uncaughtException', function (error) {
 	   console.log(error.stack);
 	});
-	
+
