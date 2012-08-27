@@ -6,10 +6,10 @@
 define("LoginForm", ["Olives/OObject", "Config", "Services", "Olives/Event-plugin", "Olives/Model-plugin", "Store"],
 
 function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
-	
+
 	var loginForm = new OObject(new Store({name:"", password:"", confirmPassword: ""})),
 		transport = Config.get("Transport");
-	
+
 	loginForm.plugins.addAll({
 		"event": new EventPlugin(loginForm),
 		"model": new ModelPlugin(loginForm.model, {
@@ -21,25 +21,24 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 			}
 		})
 	});
-	
+
 	loginForm.login = function login() {
 		var name = this.model.get("name"),
 			password = this.model.get("password"),
 			confirmPassword = this.model.get("confirmPassword"),
 			mode = this.model.get("mode");
-		
-		if ( mode 
+
+		if ( mode
 			 && ((password != confirmPassword)
 			    || !password)) {
-			
+
 			console.log("password pas bon", this.model.get("password"), this.model.toJSON())
 			return false;
 		} else {
-			
-			transport.request("Login", {
+
+			transport.request(mode ? "CreateAccount" : "Login", {
 				name: name,
-				password: password,
-				mode: mode ? "create" : "login"
+				password: password
 			}, function (result) {
 				if (result.login == "okay") {
 					console.log("logged in as", result.name);
@@ -50,21 +49,21 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 			return true;
 		}
 	};
-	
+
 	loginForm.toggleCreateMode = function toggleCreateMode(event) {
 		var current = this.model.get("mode");
 		this.model.set("mode", !current);
 		this.model.set("createBtnTxt", current ? "Create account" : "Cancel");
-		this.model.set("loginBtnTxt", current ? "Login" : "Create");	
+		this.model.set("loginBtnTxt", current ? "Login" : "Create");
 	};
 
 	loginForm.alive(Config.get("loginFormUI"));
-	
+
 	Services.screens.add("login", loginForm);
-	
+
 	Services.routing.set("login", function () {
-		
+
 		Services.screens.show("login");
 	});
-	
+
 });

@@ -16,10 +16,7 @@ var connect = require("connect"),
 
 CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Transport) {
 
-	var User = new CouchDBUser,
-		transport = new Transport(olives.handlers);
-
-	User.setTransport(transport);
+	var transport = new Transport(olives.handlers);
 
 	var io = socketIO.listen(http.createServer(connect()
 			.use(connect.responseTime())
@@ -48,52 +45,57 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 
 		olives.config.update("CouchDB", "sessionStore", sessionStore);
 
+		olives.handlers.set("CreateAccount", function (json, onEnd) {
+			var user = new CouchDBUser;
+
+			user.setTransport(transport);
+
+			user.set("password", json.password);
+			user.set("name", json.name);
+
+			user.create().then(function (si) {
+				console.log("yes", si);
+				user.unsync();
+			}, function (si) {
+				console.log("no", si);
+				user.unsync();
+			});
+		});
+
 		olives.handlers.set("Login", function (json, onEnd) {
+			var user = new CouchDBUser;
 
-			if (json.mode == "create") {
+			user.setTransport(transport);
 
-				User.unsync();
-				User.set("password", json.password);
-				User.set("name", json.name);
+			user.set("password", json.password);
+			user.set("name", json.name);
 
-				User.create().then(function (si) {
-					console.log("yes", si);
-				}, function (si) {
-					console.log("no", si);
-				});
+			user.login().then(function (result) {
+				var result = JSON.parse(result);
 
-			} else {
+				if (!result.error) {
+					var cookieJSON = cookie.parse(json.handshake.headers.cookie),
+						sessionID = cookieJSON["suggestions.sid"].split("s:")[1].split(".")[0];
 
-				User.set("name", json.name);
-				User.set("password", json.password);
+					sessionStore.get(sessionID, function (err, session) {
+						if (err) {
+							throw new Error(err);
+						} else {
+							session.auth = json.name+":"+json.password;
+							sessionStore.set(sessionID, session);
+							onEnd({login:"okay", name:json.name});
+						}
+					});
 
-				User.login().then(function (result) {
-					var result = JSON.parse(result);
+				} else {
+					onEnd({login:"failed", reason:"name or password invalid"});
+				}
 
-					if (!result.error) {
-						var cookieJSON = cookie.parse(json.handshake.headers.cookie),
-							sessionID = cookieJSON["suggestions.sid"].split("s:")[1].split(".")[0];
-
-						sessionStore.get(sessionID, function (err, session) {
-							if (err) {
-								throw new Error(err);
-							} else {
-								session.auth = json.name+":"+json.password;
-								sessionStore.set(sessionID, session);
-								onEnd({login:"okay", name:json.name});
-							}
-						});
-
-					} else {
-						onEnd({login:"failed", reason:"name or password invalid"});
-					}
-				}, function (result) {
-					console.log(result)
-				});
-
-
-			}
-
+				user.unsync();
+			}, function (result) {
+				console.log(result);
+				user.unsync();
+			});
 		});
 
 });
