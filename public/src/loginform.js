@@ -8,7 +8,8 @@ define("LoginForm", ["Olives/OObject", "Config", "Services", "Olives/Event-plugi
 function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 
 	var loginForm = new OObject(new Store({name:"", password:"", confirmPassword: ""})),
-		transport = Config.get("Transport");
+		transport = Config.get("Transport"),
+		oldClass = "hidden";
 
 	loginForm.plugins.addAll({
 		"event": new EventPlugin(loginForm),
@@ -18,6 +19,11 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 			},
 			removeClass: function (value, className) {
 				!value ? this.classList.add(className) : this.classList.remove(className);
+			},
+			changeClass: function (value) {
+				this.classList.remove(oldClass);
+				this.classList.add(value);
+				oldClass = value;
 			}
 		})
 	});
@@ -32,7 +38,8 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 			 && ((password != confirmPassword)
 			    || !password)) {
 
-			console.log("password pas bon", this.model.get("password"), this.model.toJSON())
+			this.model.set("alertType", "alert-error");
+			this.model.set("alertMessage", "the passwords don't match.");
 			return false;
 		} else {
 
@@ -40,12 +47,9 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 				name: name,
 				password: password
 			}, function (result) {
-				if (result.login == "okay") {
-					console.log("logged in as", result.name);
-				} else {
-					console.log("login failed");
-				}
-			});
+				this.model.set("alertType", result.status == "okay" ? "alert-success" : "alert-error");
+				this.model.set("alertMessage", result.message);
+			}, this);
 			return true;
 		}
 	};

@@ -54,10 +54,18 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 			user.set("name", json.name);
 
 			user.create().then(function (si) {
-				console.log("yes", si);
+				onEnd({
+					status: "okay",
+					message: "The account was successfully created."
+				})
 				user.unsync();
-			}, function (si) {
-				console.log("no", si);
+			}, function (json) {
+				if (json.error == "conflict") {
+					onEnd({
+						status: "failed",
+						message: "An account with this user name already exists."
+					});
+				}
 				user.unsync();
 			});
 		});
@@ -74,6 +82,7 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 				var result = JSON.parse(result);
 
 				if (!result.error) {
+
 					var cookieJSON = cookie.parse(json.handshake.headers.cookie),
 						sessionID = cookieJSON["suggestions.sid"].split("s:")[1].split(".")[0];
 
@@ -81,19 +90,29 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 						if (err) {
 							throw new Error(err);
 						} else {
-							session.auth = json.name+":"+json.password;
+
+							session.auth = json.name + ":" + json.password;
 							sessionStore.set(sessionID, session);
-							onEnd({login:"okay", name:json.name});
+							onEnd({
+								status: "okay",
+								message: json.name + " is logged-in"
+							});
 						}
 					});
 
 				} else {
-					onEnd({login:"failed", reason:"name or password invalid"});
+					onEnd({
+						status: "failed",
+						message: "name or password incorrect"
+					});
 				}
 
 				user.unsync();
 			}, function (result) {
-				console.log(result);
+				onEnd({
+						status: "failed",
+						message: "Unexpected error"
+					});
 				user.unsync();
 			});
 		});
@@ -101,6 +120,6 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 });
 
 process.on('uncaughtException', function (error) {
-	   console.log(error.stack);
-	});
+	console.log(error.stack);
+});
 
