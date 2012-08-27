@@ -49,10 +49,22 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 			}, function (result) {
 				this.model.set("alertType", result.status == "okay" ? "alert-success" : "alert-error");
 				this.model.set("alertMessage", result.message);
+				this.model.set("loggedin", result.status == "okay");
 			}, this);
 			return true;
 		}
 	};
+
+	loginForm.model.watchValue("loggedin", function (value) {
+		var navigationMenu = Config.get("Navigation");
+		if (value) {
+			navigationMenu.model.set("login", this.model.get("name"));
+		} else {
+			navigationMenu.model.set("login", "Login");
+		}
+	}, loginForm);
+
+
 
 	loginForm.toggleCreateMode = function toggleCreateMode(event) {
 		var current = this.model.get("mode");

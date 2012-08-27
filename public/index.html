@@ -38,9 +38,9 @@
           <a class="brand" href="#">Suggestions</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li class="active"><a href="#list" data-event="listen:click,show">List</a></li>
-              <li><a href="#new" data-event="listen:click,show">New suggestion</a></li>
-               <li><a href="#login" data-event="listen:click,show">Login</a></li>
+              <li class="active"><a href="#list" data-event="listen: click, show">List</a></li>
+              <li><a href="#new" data-event="listen: click, show">New suggestion</a></li>
+               <li><a href="#login" data-event="listen: click, show" data-model="bind: innerHTML, login">Login</a></li>
               <form class="navbar-search pull right" action>
               		<input type="text" class="search-query span2" placeholder="search..." />
               </form>
@@ -136,13 +136,13 @@
 		 */
 		function (ListSuggestions, SuggestionForm, LoginForm, Navigation, Config, Services) {
 			// Init the suggestion form
-			SuggestionForm();
+			Config.set("SuggestionForm", SuggestionForm());
 
 			// Init the suggestions list
-			ListSuggestions();
+			Config.set("ListSuggestions", ListSuggestions());
 
 			// Init the navigation bar
-			Navigation();
+			Config.set("Navigation", Navigation());
 
 			// Init Screens
 			Services.screens.setDestination(Config.get("container"));
