@@ -8,6 +8,7 @@ define("LoginForm", ["Olives/OObject", "Config", "Services", "Olives/Event-plugi
 function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 
 	var loginForm = new OObject(new Store({name:"", password:"", confirmPassword: ""})),
+		exportData = new Store,
 		transport = Config.get("Transport"),
 		oldClass = "hidden";
 
@@ -55,23 +56,17 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 		}
 	};
 
-	loginForm.model.watchValue("loggedin", function (value) {
-		var navigationMenu = Config.get("Navigation");
-		if (value) {
-			navigationMenu.model.set("login", this.model.get("name"));
-		} else {
-			navigationMenu.model.set("login", "Login");
-		}
-	}, loginForm);
-
-
-
 	loginForm.toggleCreateMode = function toggleCreateMode(event) {
 		var current = this.model.get("mode");
 		this.model.set("mode", !current);
 		this.model.set("createBtnTxt", current ? "Create account" : "Cancel");
 		this.model.set("loginBtnTxt", current ? "Login" : "Create");
 	};
+
+	// exportData contains the current user information, it's public
+	loginForm.model.watchValue("loggedin", function (value) {
+		exportData.set("login", value ? loginForm.model.get("name") : "");
+	});
 
 	loginForm.alive(Config.get("loginFormUI"));
 
@@ -81,5 +76,7 @@ function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 
 		Services.screens.show("login");
 	});
+
+	return exportData;
 
 });

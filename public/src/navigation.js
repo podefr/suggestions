@@ -36,6 +36,10 @@ function (EventPlugin, OObject, Config, Services, ModelPlugin) {
 			"model": new ModelPlugin(navigation.model)
 		});
 
+		Config.get("LoginForm").watchValue("login", function (value) {
+			this.model.set("login", value ? value : "login");
+		}, navigation);
+
 		// And finally create the UI from the dom
 		navigation.alive(Config.get("navbarUI"));
 

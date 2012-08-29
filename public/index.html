@@ -56,7 +56,7 @@
 			<fieldset>
 			<legend data-texts="bind:innerHTML, legend">New Suggestion</legend>
 				<div class="control-group">
-					<input data-model="bind: value, author" class="input-xlarge" placeholder="What's your name?"/>
+					<input data-model="bind: value, author" readonly="readonly" class="input-xlarge" placeholder="You must be logged in to post a suggestion"/>
 					<span class="help-inline hidden" data-texts="bind: removeClass, errorAuthor, hidden">This field is required!</span>
 				</div>
 				<div class="control-group">
@@ -135,14 +135,17 @@
 		 * It creates each UI and makes them play together
 		 */
 		function (ListSuggestions, SuggestionForm, LoginForm, Navigation, Config, Services) {
-			// Init the suggestion form
-			Config.set("SuggestionForm", SuggestionForm());
-
-			// Init the suggestions list
-			Config.set("ListSuggestions", ListSuggestions());
+      // Save LoginForm's public data so it's also accessible through Config (for homogeneity purpose)
+      Config.set("LoginForm", LoginForm);
 
 			// Init the navigation bar
 			Config.set("Navigation", Navigation());
+
+      // Init the suggestion form
+      Config.set("SuggestionForm", SuggestionForm());
+
+      // Init the suggestions list
+      Config.set("ListSuggestions", ListSuggestions());
 
 			// Init Screens
 			Services.screens.setDestination(Config.get("container"));
