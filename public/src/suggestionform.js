@@ -87,7 +87,8 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Config, Servic
 				"submit": "Suggest",
 				"errorAuthor": false,
 				"errorDesc": false,
-				"error": false
+				"error": false,
+				"authorized": (!!Config.get("LoginForm").get("login"))
 			});
 			couchDBStore.unsync();
 			couchDBStore.reset({
@@ -115,10 +116,18 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Config, Servic
 				"submit": "Save",
 				"errorAuthor": false,
 				"errorDesc": false,
-				"error": false
+				"error": false,
+				"authorized": false
 			});
 			couchDBStore.unsync();
-			couchDBStore.sync("suggestions", id);
+			couchDBStore.sync("suggestions", id).then(function () {
+				console.log(couchDBStore.get("author") , Config.get("LoginForm").get("login"))
+				txt = texts
+				texts.set("authorized", couchDBStore.get("author") == Config.get("LoginForm").get("login"));
+			}, function () {
+				console.log("ERROR", arguments)
+			});
+			cdb = couchDBStore
 			Services.screens.show("form");
 		});
 

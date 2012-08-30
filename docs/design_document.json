@@ -1,9 +1,11 @@
 {
    "_id": "_design/list",
+   "_rev": "14-6c631201dd9b045e633a2f22b199e585",
    "views": {
        "id": {
            "map": "function (doc) { if (doc.desc) emit([doc._id, doc.author], {desc: doc.desc, date: doc.date, author: doc.author}) }"
        }
    },
-   "language": "javascript"
+   "language": "javascript",
+   "validate_doc_update": "function (newDoc, oldDoc, userCtx) { if (newDoc.author != userCtx.name) { throw({ forbidden: 'You may only update documents with author ' + userCtx.name }); } }"
 }
