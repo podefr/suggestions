@@ -10,9 +10,9 @@
  * MIT Licensed
  */
 
-define("CouchDBStore", 
+define("CouchDBStore",
 
-["Store", "StateMachine", "Tools", "Promise"], 
+["Store", "StateMachine", "Tools", "Promise"],
 
 /**
  * @class
@@ -20,46 +20,48 @@ define("CouchDBStore",
  * It subscribes to _changes to keep its data up to date.
  */
 function CouchDBStore(Store, StateMachine, Tools, Promise) {
-	
+
 	/**
 	 * Defines the CouchDBStore
 	 * @returns {CouchDBStoreConstructor}
 	 */
 	function CouchDBStoreConstructor() {
-		
+
 		/**
 		 * The name of the channel on which to run the requests
 		 * @private
 		 */
 		var _channel = "CouchDB",
-		
+
 		/**
 		 * The transport used to run the requests
 		 * @private
 		 */
 		_transport = null,
-		
+
 		/**
 		 * That will store the synchronization info
 		 * @private
 		 */
 		_syncInfo = {},
-		
+
 		/**
 		 * The promise that is returned by sync
 		 * It's resolved when entering listening state
 		 * It's rejected when no such document to sync to
+		 * The promise is initialized here for testing purpose
+		 * but it's initialized again in sync
 		 * @private
 		 */
-		_syncPromise = new Promise(),
-		
+		_syncPromise = new Promise,
+
 		/**
 		 * All the actions performed by the couchDBStore
 		 * They'll feed the stateMachine
 		 * @private
 		 */
 		actions = {
-			
+
 			/**
 			 * Get a CouchDB view
 			 * @private
@@ -68,7 +70,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 
 				_syncInfo.query = _syncInfo.query || {};
 				_syncInfo.query.update_seq=true;
-				
+
 				_transport.request(_channel, {
 					method: "GET",
 					path: "/" + _syncInfo.database + "/_design/" + _syncInfo.design + "/" + _syncInfo.view,
@@ -76,10 +78,10 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 				}, function (results) {
 					var json = JSON.parse(results);
 					if (!json.rows) {
-						throw new Error("CouchDBStore [" + _syncInfo.database + ", " + _syncInfo.design + ", " + _syncInfo.view + "].sync() failed: " + results);	
+						throw new Error("CouchDBStore [" + _syncInfo.database + ", " + _syncInfo.design + ", " + _syncInfo.view + "].sync() failed: " + results);
 					} else {
 						this.reset(json.rows);
-						
+						_syncPromise.resolve(this);
 						if (typeof json.total_rows == "undefined") {
 							this.setReducedViewInfo(true);
 						}
@@ -88,13 +90,13 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 					}
 				}, this);
 			},
-			
+
 			/**
 			 * Get a CouchDB document
 			 * @private
 			 */
-			getDocument: function () { 
-				
+			getDocument: function () {
+
 				_transport.request(_channel, {
 					method: "GET",
 					path: "/" + _syncInfo.database + "/" + _syncInfo.document,
@@ -103,19 +105,20 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 					var json = JSON.parse(results);
 					if (json._id) {
 						this.reset(json);
-						_stateMachine.event("subscribeToDocumentChanges");	
+						_syncPromise.resolve(this);
+						_stateMachine.event("subscribeToDocumentChanges");
 					} else {
-						_syncPromise.reject(this);
+						_syncPromise.reject(results);
 					}
 				}, this);
 			},
-			
+
 			/**
 			 * Get a bulk of documents
 			 * @private
 			 */
 			getBulkDocuments: function (lol) {
-				
+
 				var reqData = {
 							path: "/" + _syncInfo.database + "/_all_docs",
 							query: _syncInfo.query
@@ -130,32 +133,33 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 						"Content-Type": "application/json"
 					};
 					errorString = reqData.data;
-					
+
 				// Else, we just GET the documents using startkey/endkey
 				} else {
 					reqData.method = "GET";
 					errorString = JSON.stringify(_syncInfo.query);
 				}
-				
+
 				_syncInfo.query.include_docs = true;
 				_syncInfo.query.update_seq = true;
-				
-				_transport.request(_channel, 
+
+				_transport.request(_channel,
 					reqData,
 					function (results) {
-					
+
 					var json = JSON.parse(results);
-					
+
 					if (!json.rows) {
-						throw new Error("CouchDBStore.sync(\"" + _syncInfo.database + "\", " + errorString + ") failed: " + results);	
+						throw new Error("CouchDBStore.sync(\"" + _syncInfo.database + "\", " + errorString + ") failed: " + results);
 					} else {
 						this.reset(json.rows);
+						_syncPromise.resolve(this);
 						_stateMachine.event("subscribeToBulkChanges", json.update_seq);
 					}
 				}, this);
-				
+
 			},
-			
+
 			/**
 			 * Put a new document in CouchDB
 			 * @private
@@ -172,26 +176,26 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
             		var json = JSON.parse(result);
             		if (json.ok) {
             			promise.resolve(json);
-                		_stateMachine.event("subscribeToDocumentChanges");	
+                		_stateMachine.event("subscribeToDocumentChanges");
             		} else {
             			promise.reject(json);
             		}
             	});
             },
-            
+
             /**
              * Subscribe to changes when synchronized with a view
              * @param {Number} the update_seq given by getView, it'll be passed to since in the GET request
              * @private
              */
             subscribeToViewChanges: function (update_seq) {
-            	
+
             	Tools.mixin({
 					feed: "continuous",
 					heartbeat: 20000,
 					since: update_seq
 				}, _syncInfo.query);
-            	
+
             	this.stopListening = _transport.listen(_channel, {
 						path: "/" + _syncInfo.database + "/_changes",
 						query: _syncInfo.query
@@ -202,12 +206,12 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 						if (changes == "\n") {
 							return false;
 						}
-						
+
 						var json = JSON.parse(changes),
 							action;
-						
+
 						// reducedView is known on the first get view
-						if (_syncInfo.reducedView) { 
+						if (_syncInfo.reducedView) {
 							action = "updateReduced";
 						} else {
 							if (json.deleted) {
@@ -218,11 +222,11 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 								action = "change";
 							}
 						}
-							
+
 						_stateMachine.event(action, json.id);
 					}, this);
 			},
-			
+
 			/**
 			 * Subscribe to changes when synchronized with a document
 			 * @private
@@ -243,23 +247,23 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 					if (changes == "\n") {
 						return false;
 					}
-					
+
 					json = JSON.parse(changes);
-					
+
 					// The document is the modified document is the current one
-					if (json.id == _syncInfo.document && 
+					if (json.id == _syncInfo.document &&
 						// And if it has a new revision
 						json.changes.pop().rev != this.get("_rev")) {
-						
+
 						if (json.deleted) {
 							_stateMachine.event("deleteDoc");
 						} else {
-							_stateMachine.event("updateDoc");	
+							_stateMachine.event("updateDoc");
 						}
 					 }
 				}, this);
 			},
-			
+
 			/**
 			 * Subscribe to changes when synchronized with a bulk of documents
 			 * @private
@@ -271,7 +275,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 					since: update_seq,
 					include_docs: true
 				}, _syncInfo.query);
-            	
+
             	this.stopListening = _transport.listen(_channel, {
 						path: "/" + _syncInfo.database + "/_changes",
 						query: _syncInfo.query
@@ -283,10 +287,10 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 						if (changes == "\n") {
 							return false;
 						}
-						
+
 						var json = JSON.parse(changes),
 							action;
-						
+
 						if (json.changes[0].rev.search("1-") == 0) {
 							action = "bulkAdd";
 						} else if (json.deleted) {
@@ -294,13 +298,13 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 						} else {
 							action = "bulkChange";
 						}
-						
+
 						_stateMachine.event(action, json.id, json.doc);
-						
-						
+
+
 					}, this);
 			},
-			
+
 			/**
 			 * Update in the Store a document that was updated in CouchDB
 			 * Get the whole view :(, then get the modified document and update it.
@@ -316,7 +320,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 					query: _syncInfo.query
 				}, function (view) {
 					var json = JSON.parse(view);
-					
+
 					if (json.rows.length == this.getNbItems()) {
 						json.rows.some(function (value, idx) {
 							if (value.id == id) {
@@ -328,9 +332,9 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 					}
 
 				}, this);
-				
+
 			},
-			
+
 			/**
 			 * When a doc is removed from the view even though it still exists
 			 * or when it's added to a view, though it wasn't just created
@@ -339,20 +343,20 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 			 */
 			evenDocsInStore: function (view, id) {
 				var nbItems = this.getNbItems();
-				
+
 				// If a document was removed from the view
 				if (view.length < nbItems) {
-					
+
 					// Look for it in the store to remove it
 					this.loop(function (value, idx) {
 						if (value.id == id) {
 							this.del(idx);
 						}
 					}, this);
-					
+
 				// If a document was added to the view
 				} else if (view.length > nbItems) {
-					
+
 					// Look for it in the view and add it to the store at the same place
 					view.some(function (value, idx) {
 						if (value.id == id) {
@@ -363,7 +367,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 				}
 
 			},
-			
+
 			/**
 			 * Add in the Store a document that was added in CouchDB
 			 * @private
@@ -372,28 +376,28 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 				if (_syncInfo["query"].startkey || _syncInfo["query"].endkey) {
 					_syncInfo.query.include_docs = true;
 					_syncInfo.query.update_seq = true;
-				
+
 					_transport.request(_channel, {
 						method: "GET",
 						path: "/" + _syncInfo.database + "/_all_docs",
 						query: _syncInfo.query
 					},
 					function (results) {
-						
+
 						var json = JSON.parse(results);
-						
+
 						json.rows.forEach(function (value, idx) {
 							if (value.id == id) {
 								this.alter("splice", idx, 0, value.doc);
 							}
 						}, this);
-	
+
 					}, this);
 				} else {
 					return false;
 				}
 			},
-			
+
 			/**
 			 * Update in the Store a document that was updated in CouchDB
 			 * @private
@@ -405,7 +409,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 						}
 					}, this);
 			},
-			
+
 			/**
 			 * Remove from the Store a document that was removed in CouchDB
 			 * @private
@@ -417,7 +421,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 					}
 				}, this);
 			},
-			
+
 			/**
 			 * Add in the Store a document that was added in CouchDB
 			 * @private
@@ -429,16 +433,16 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 					query: _syncInfo.query
 				}, function (view) {
 					var json = JSON.parse(view);
-					
+
 					json.rows.some(function (value, idx) {
 						if (value.id == id) {
-							this.alter("splice", idx, 0, value);	
+							this.alter("splice", idx, 0, value);
 						}
 					}, this);
-					
+
 				}, this);
 			},
-			
+
 			/**
 			 * Update a reduced view (it has one row with no id)
 			 * @private
@@ -450,12 +454,12 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 					query: _syncInfo.query
 				}, function (view) {
 					var json = JSON.parse(view);
-					
+
 					this.set(0, json.rows[0]);
-					
+
 				}, this);
 			},
-			
+
 			/**
 			 * Update the document when synchronized with a document.
 			 * This differs than updating a document in a View
@@ -466,18 +470,18 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 					method: "GET",
 					path: "/"+_syncInfo.database+"/" + _syncInfo.document
 				}, function (doc) {
-					this.reset(JSON.parse(doc));			
+					this.reset(JSON.parse(doc));
 				}, this);
 		    },
-		    
+
 		    /**
 		     * Delete all document's properties
 		     * @private
 		     */
 		    deleteDoc: function () {
-		    	this.reset({});			
+		    	this.reset({});
 		    },
-		    
+
 		    /**
 		     * Update a document in CouchDB through a PUT request
 		     * @private
@@ -501,18 +505,18 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
             		}
             	}, this);
 		    },
-		    
+
 		    /**
 		     * Update the database with bulk documents
 		     * @private
 		     */
 		    updateDatabaseWithBulkDoc: function (promise) {
-		    	
+
 		    	var docs = [];
 		    	this.loop(function (value) {
 		    		docs.push(value.doc);
 		    	});
-		    	
+
 		    	_transport.request(_channel, {
 		    		method: "POST",
 		    		path: "/" + _syncInfo.database + "/_bulk_docs",
@@ -524,7 +528,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 		    		promise.resolve(JSON.parse(response));
             	});
 		    },
-		    
+
 		    /**
 		     * Remove a document from CouchDB through a DELETE request
 		     * @private
@@ -538,15 +542,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
             		}
             	});
 		    },
-		    
-		    /**
-		     * Resolve the promise
-		     * @private
-		     */
-		    resolve: function () {
-            	  _syncPromise.resolve(this);
-             },
-             
+
              /**
               * The function call to unsync the store
               * @private
@@ -556,7 +552,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
             	 delete this.stopListening;
              }
 		},
-		
+
 		/**
 		 * The state machine
 		 * @private
@@ -568,7 +564,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 				["getDocument", actions.getDocument, this, "Synched"],
 				["getBulkDocuments", actions.getBulkDocuments, this, "Synched"]
 			 ],
-						
+
 			"Synched": [
 			    ["updateDatabase", actions.createDocument, this],
 			    ["subscribeToViewChanges", actions.subscribeToViewChanges, this, "Listening"],
@@ -576,9 +572,8 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 				["subscribeToBulkChanges", actions.subscribeToBulkChanges, this, "Listening"],
 				["unsync", function noop(){}, "Unsynched"]
 			 ],
-				
+
 			"Listening": [
-			    ["entry", actions.resolve, this],
 			    ["change", actions.updateDocInStore, this],
 			    ["bulkAdd", actions.addBulkDocInStore, this],
 			    ["bulkChange", actions.updateBulkDocInStore, this],
@@ -592,9 +587,9 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 			    ["removeFromDatabase", actions.removeFromDatabase, this],
 			    ["unsync", actions.unsync, this, "Unsynched"]
 			   ]
-			
+
 		});
-		
+
 		/**
 		 * Synchronize the store with a view
 		 * @param {String} database the name of the database where to get...
@@ -603,6 +598,9 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 		 * @returns {Boolean}
 		 */
 		this.sync = function sync() {
+
+			_syncPromise = new Promise;
+
 			if (typeof arguments[0] == "string" && typeof arguments[1] == "string" && typeof arguments[2] == "string") {
 				this.setSyncInfo(arguments[0], arguments[1], arguments[2], arguments[3]);
 				_stateMachine.event("getView");
@@ -618,7 +616,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 			}
 			return false;
 		};
-		
+
 		/**
 		 * Set the synchronization information
 		 * @private
@@ -648,7 +646,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 			}
 			return false;
 		};
-		
+
 		/**
 		 * Between two synchs, the previous info must be cleared up
 		 * @private
@@ -657,7 +655,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 			_syncInfo = {};
 			return true;
 		};
-		
+
 		/**
 		 * Set a flag to tell that a synchronized view is reduced
 		 * @private
@@ -668,9 +666,9 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 				return true;
 			} else {
 				return false;
-			} 
+			}
 		};
-		
+
 		/**
 		 * Get the synchronization information
 		 * @private
@@ -679,7 +677,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 		this.getSyncInfo = function getSyncInfo() {
 			return _syncInfo;
 		};
-		
+
 		/**
 		 * Unsync a store. Unsync must be called prior to resynchronization.
 		 * That will prevent any unwanted resynchronization.
@@ -689,7 +687,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 		this.unsync = function unsync() {
 			return _stateMachine.event("unsync");
 		};
-		
+
 		/**
 		 * Upload the document to the database
 		 * Works for CouchDBStore that are synchronized with documents or bulk of documents.
@@ -705,10 +703,10 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 			} else if (!_syncInfo.view){
 				_stateMachine.event("updateDatabaseWithBulkDoc", promise);
 				return promise;
-			} 
+			}
 			return false;
 		};
-		
+
 		/**
 		 * Remove the document from the database
 		 * @returns true if remove called
@@ -716,14 +714,14 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 		this.remove = function remove() {
 			if (_syncInfo.document) {
 				return _stateMachine.event("removeFromDatabase");
-			} 
+			}
 			return false;
 		};
-		
+
 		/**
 		 * The transport object to use
 		 * @param {Object} transport the transport object
-		 * @returns {Boolean} true if 
+		 * @returns {Boolean} true if
 		 */
 		this.setTransport = function setTransport(transport) {
 			if (transport && typeof transport.listen == "function" && typeof transport.request == "function") {
@@ -733,7 +731,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 				return false;
 			}
 		};
-		
+
 		/**
 		 * Get the state machine
 		 * Also only useful for debugging
@@ -743,7 +741,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 		this.getStateMachine = function getStateMachine() {
 			return _stateMachine;
 		};
-		
+
 		/**
 		 * Get the current transport
 		 * Also only useful for debugging
@@ -753,7 +751,7 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 		this.getTransport = function getTransport() {
 			return _transport;
 		};
-		
+
 		/**
 		 * The functions called by the stateMachine made available for testing purpose
 		 * @private
@@ -761,13 +759,14 @@ function CouchDBStore(Store, StateMachine, Tools, Promise) {
 		this.actions = actions;
 
 	};
-	
-	return function CouchDBStoreFactory() {
-		CouchDBStoreConstructor.prototype = new Store;
+
+	return function CouchDBStoreFactory(data) {
+		CouchDBStoreConstructor.prototype = new Store(data);
 		return new CouchDBStoreConstructor;
 	};
-	
-});/**
+
+});
+/**
  * Emily
  * Copyright(c) 2012 Olivier Scherrer <pode.fr@gmail.com>
  * MIT Licensed
@@ -1273,13 +1272,13 @@ function StateMachine(Tools) {
  */
 
 define("Store", ["Observable", "Tools"],
-/** 
+/**
  * @class
  * Store creates a small NoSQL database with observables
  * It can publish events on store/data changes
  */
  function Store(Observable, Tools) {
-	
+
 	/**
 	 * Defines the Store
 	 * @private
@@ -1287,21 +1286,21 @@ define("Store", ["Observable", "Tools"],
 	 * @returns
 	 */
 	return function StoreConstructor($data) {
-		
+
 		/**
 		 * Where the data is stored
 		 * @private
 		 */
 		var _data = Tools.clone($data) || {},
-		
+
 		/**
 		 * The observable
 		 * @private
 		 */
 		_storeObservable = new Observable(),
-		
+
 		_valueObservable = new Observable(),
-		
+
 		/**
 		 * Gets the difference between two objects and notifies them
 		 * @private
@@ -1319,7 +1318,7 @@ define("Store", ["Observable", "Tools"],
 				 });
 			});
 		};
-		
+
 		/**
 		 * Get the number of items in the store
 		 * @returns {Number} the number of items in the store
@@ -1327,7 +1326,7 @@ define("Store", ["Observable", "Tools"],
 		this.getNbItems = function() {
 			return _data instanceof Array ? _data.length : Tools.count(_data);
 		};
-		
+
 		/**
 		 * Get a value from its index
 		 * @param {String} name the name of the index
@@ -1336,7 +1335,7 @@ define("Store", ["Observable", "Tools"],
 		this.get = function get(name) {
 			return _data[name];
 		};
-		
+
 		/**
 		 * Checks if the store has a given value
 		 * @param {String} name the name of the index
@@ -1345,7 +1344,7 @@ define("Store", ["Observable", "Tools"],
 		this.has = function has(name) {
 			return _data.hasOwnProperty(name);
 		};
-		
+
 		/**
 		 * Set a new value and overrides an existing one
 		 * @param {String} name the name of the index
@@ -1355,19 +1354,19 @@ define("Store", ["Observable", "Tools"],
 		this.set = function set(name, value) {
 			var ante,
 				action;
-			
+
 			if (typeof name != "undefined") {
 				ante = this.has(name);
 				_data[name] = value;
 				action = ante ? "updated" : "added";
-				_storeObservable.notify(action, name, _data[name]);	
+				_storeObservable.notify(action, name, _data[name]);
 				_valueObservable.notify(name, _data[name], action);
 				return true;
 			} else {
 				return false;
 			}
 		};
-		
+
 		/**
 		 * Update the property of an item.
 		 * @param {String} name the name of the index
@@ -1387,7 +1386,7 @@ define("Store", ["Observable", "Tools"],
 				return false;
 			}
 		};
-		
+
 		/**
 		 * Delete value from its index
 		 * @param {String} name the name of the index from which to delete the value
@@ -1405,10 +1404,10 @@ define("Store", ["Observable", "Tools"],
 				return false;
 			}
 		};
-		
+
 		/**
 		 * Delete multiple indexes. Prefer this one over multiple del calls.
-		 * @param {Array} 
+		 * @param {Array}
 		 * @returns false if param is not an array.
 		 */
 		this.delAll = function delAll(indexes) {
@@ -1422,7 +1421,7 @@ define("Store", ["Observable", "Tools"],
 				return false;
 			}
 		};
-		
+
 		/**
 		 * Alter the data be calling one of it's method
 		 * When the modifications are done, it notifies on changes.
@@ -1432,7 +1431,7 @@ define("Store", ["Observable", "Tools"],
 		this.alter = function alter(func) {
 			var apply,
 				previousData;
-			
+
 			if (_data[func]) {
 				previousData = Tools.clone(_data);
 				apply = _data[func].apply(_data, Array.prototype.slice.call(arguments, 1));
@@ -1442,7 +1441,7 @@ define("Store", ["Observable", "Tools"],
 				return false;
 			}
 		};
-		
+
 		/**
 		 * Watch the store's modifications
 		 * @param {String} added/updated/deleted
@@ -1453,7 +1452,7 @@ define("Store", ["Observable", "Tools"],
 		this.watch = function watch(name, func, scope) {
 			return _storeObservable.watch(name, func, scope);
 		};
-		
+
 		/**
 		 * Unwatch the store modifications
 		 * @param {Handler} handler the handler returned by the watch function
@@ -1462,7 +1461,7 @@ define("Store", ["Observable", "Tools"],
 		this.unwatch = function unwatch(handler) {
 			return _storeObservable.unwatch(handler);
 		};
-		
+
 		/**
 		 * Get the observable used for watching store's modifications
 		 * Should be used only for debugging
@@ -1471,18 +1470,18 @@ define("Store", ["Observable", "Tools"],
 		this.getStoreObservable = function getStoreObservable() {
 			return _storeObservable;
 		};
-		
+
 		/**
 		 * Watch a value's modifications
 		 * @param {String} name the name of the value to watch for
 		 * @param {Function} func the function to execute
 		 * @param {Object} scope the scope in which to execute the function
-		 * @returns true if unwatched
+		 * @returns handler to pass to unwatchValue
 		 */
 		this.watchValue = function watchValue(name, func, scope) {
 			return _valueObservable.watch(name, func, scope);
 		};
-		
+
 		/**
 		 * Unwatch the value's modifications
 		 * @param {Handler} handler the handler returned by the watchValue function
@@ -1492,7 +1491,7 @@ define("Store", ["Observable", "Tools"],
 		this.unwatchValue = function unwatchValue(handler) {
 			return _valueObservable.unwatch(handler);
 		};
-		
+
 		/**
 		 * Get the observable used for watching value's modifications
 		 * Should be used only for debugging
@@ -1511,7 +1510,7 @@ define("Store", ["Observable", "Tools"],
 		this.loop = function loop(func, scope) {
 			Tools.loop(_data, func, scope);
 		};
-		
+
 		/**
 		 * Reset all data and get notifications on changes
 		 * @param {Arra/Object} data the new data
@@ -1528,7 +1527,7 @@ define("Store", ["Observable", "Tools"],
 			}
 
 		};
-		
+
 		/**
 		 * Dumps a JSON version of all the data
 		 * @returns {JSON}
@@ -1537,7 +1536,8 @@ define("Store", ["Observable", "Tools"],
 			return JSON.stringify(_data);
 		};
 	};
-});/**
+});
+/**
  * Emily
  * Copyright(c) 2012 Olivier Scherrer <pode.fr@gmail.com>
  * MIT Licensed
@@ -1898,16 +1898,16 @@ function Transport(Store) {
 		/**
 		 * Make a request
 		 * @param {String} channel is the name of the request handler to use
-		 * @param {Object} reqData the request data
+		 * @param data the request data
 		 * @param {Function} callback the function to execute with the result
 		 * @param {Object} scope the scope in which to execute the callback
 		 * @returns
 		 */
-		this.request = function request(channel, reqData, callback, scope) {
+		this.request = function request(channel, data, callback, scope) {
 			if (_reqHandlers.has(channel)
-					&& typeof reqData != "undefined") {
+					&& typeof data != "undefined") {
 
-				_reqHandlers.get(channel)(reqData, function () {
+				_reqHandlers.get(channel)(data, function () {
 					callback && callback.apply(scope, arguments);
 				});
 				return true;
@@ -1919,14 +1919,14 @@ function Transport(Store) {
 		/**
 		 * Listen to a path (Kept alive)
 		 * @param {String} channel is the name of the request handler to use
-		 * @param {Object} reqData the request data: path should indicate the url, query can add up query strings to the url
+		 * @param data the request data: path should indicate the url, query can add up query strings to the url
 		 * @param {Function} callback the function to execute with the result
 		 * @param {Object} scope the scope in which to execute the callback
 		 * @returns
 		 */
-		this.listen = function listen(channel, reqData, callback, scope) {
+		this.listen = function listen(channel, data, callback, scope) {
 			if (_reqHandlers.has(channel)
-					&& typeof reqData != "undefined"
+					&& typeof data != "undefined"
 					&& typeof callback == "function") {
 
 				var func = function () {
@@ -1934,7 +1934,7 @@ function Transport(Store) {
 				},
 				abort;
 
-				abort = _reqHandlers.get(channel)(reqData, func, func);
+				abort = _reqHandlers.get(channel)(data, func, func);
 				return function () {
 					abort.func.call(abort.scope);
 				};

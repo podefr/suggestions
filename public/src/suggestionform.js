@@ -120,12 +120,8 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Config, Servic
 				"authorized": false
 			});
 			couchDBStore.unsync();
-			couchDBStore.sync("suggestions", id).then(function () {
-				console.log(couchDBStore.get("author") , Config.get("LoginForm").get("login"))
-				txt = texts
+			couchDBStore.sync("suggestions", id).then(function (result) {
 				texts.set("authorized", couchDBStore.get("author") == Config.get("LoginForm").get("login"));
-			}, function () {
-				console.log("ERROR", arguments)
 			});
 			cdb = couchDBStore
 			Services.screens.show("form");
