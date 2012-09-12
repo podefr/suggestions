@@ -9,7 +9,7 @@ Suggestions is based on:
  * connect for the middleware
  * CouchDB
  * Emily + Olives
- 
+ * Redis for storing sessions 
  
 ![screenshot](https://github.com/podefr/suggestions/raw/master/docs/snapshot.png)
 
@@ -19,6 +19,7 @@ You need:
 
  * a couchdb up and running
  * a git clone of this repo
+ * a redis-server up and running
  * node installed
 
 ```bash
@@ -44,4 +45,3 @@ and connect your browser:
 open http://127.0.0.1:8000
 ```
 
-There's a live a node machine that is coming up soon.
