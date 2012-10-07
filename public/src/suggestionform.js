@@ -1,6 +1,6 @@
 /**
  * Suggestions
- * Copyright(c) 2012 Ta•aut
+ * Copyright(c) 2012 Taâ€¢aut
  * MIT Licensed
  */
 define("SuggestionForm", ["Olives/OObject", "CouchDBStore", "Store", "Olives/Model-plugin", "Olives/Event-plugin", "Config", "Services"],
@@ -123,7 +123,6 @@ function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Config, Servic
 			couchDBStore.sync("suggestions", id).then(function (result) {
 				texts.set("authorized", couchDBStore.get("author") == Config.get("LoginForm").get("login"));
 			});
-			cdb = couchDBStore
 			Services.screens.show("form");
 		});
 

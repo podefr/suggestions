@@ -1,6 +1,6 @@
 /**
  * Suggestions
- * Copyright(c) 2012 Ta•aut
+ * Copyright(c) 2012 Taâ€¢aut
  * MIT Licensed
  */
 define("Navigation", ["Olives/Event-plugin", "Olives/OObject", "Config", "Services", "Olives/Model-plugin"],
