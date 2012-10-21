@@ -109,7 +109,7 @@
     <script src="lib/CouchDBTools.js"></script>
     <script src="lib/Olives-services.js"></script>
     <script>
-    	define("Config", ["Store", "Olives/Transport", ], function (Store, Transport) {
+    	define("Config", ["Store", "Olives/Transport"], function (Store, Transport) {
     		// The application's configuration
     		return new Store({
     			Transport: new Transport(io, location.href),
