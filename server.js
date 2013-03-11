@@ -43,7 +43,7 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 
 		olives.registerSocketIO(io);
 
-		olives.config.update("CouchDB", "sessionStore", sessionStore);
+		CouchDBTools.configuration.sessionStore = sessionStore;
 
 		olives.handlers.set("CreateAccount", function (json, onEnd) {
 			var user = new CouchDBUser;

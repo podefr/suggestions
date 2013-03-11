@@ -3,7 +3,7 @@
  * Copyright(c) 2012 Ta•aut
  * MIT Licensed
  */
-define("ListSuggestions", ["Olives/OObject", "CouchDBStore", "Olives/Model-plugin", "Olives/Event-plugin", "Config", "Services"],
+define("ListSuggestions", ["OObject", "CouchDBStore", "Bind.plugin", "Event.plugin", "Config", "Services"],
 
 function (OObject, CouchDBStore, ModelPlugin, EventPlugin, Config, Services) {
 

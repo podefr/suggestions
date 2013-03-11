@@ -3,7 +3,7 @@
  * Copyright(c) 2012 Ta•aut
  * MIT Licensed
  */
-define("LoginForm", ["Olives/OObject", "Config", "Services", "Olives/Event-plugin", "Olives/Model-plugin", "Store"],
+define("LoginForm", ["OObject", "Config", "Services", "Event.plugin", "Bind.plugin", "Store"],
 
 function (OObject, Config, Services, EventPlugin, ModelPlugin, Store) {
 

@@ -3,7 +3,7 @@
  * Copyright(c) 2012 Ta•aut
  * MIT Licensed
  */
-define("Navigation", ["Olives/Event-plugin", "Olives/OObject", "Config", "Services", "Olives/Model-plugin"],
+define("Navigation", ["Event.plugin", "OObject", "Config", "Services", "Bind.plugin"],
 
 function (EventPlugin, OObject, Config, Services, ModelPlugin) {
 

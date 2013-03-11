@@ -3,7 +3,7 @@
  * Copyright(c) 2012 Ta•aut
  * MIT Licensed
  */
-define("SuggestionForm", ["Olives/OObject", "CouchDBStore", "Store", "Olives/Model-plugin", "Olives/Event-plugin", "Config", "Services"],
+define("SuggestionForm", ["OObject", "CouchDBStore", "Store", "Bind.plugin", "Event.plugin", "Config", "Services"],
 
 function (OObject, CouchDBStore, Store, ModelPlugin, EventPlugin, Config, Services) {
 
