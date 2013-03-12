@@ -14,6 +14,10 @@ var connect = require("connect"),
 	RedisStore = require("connect-redis")(connect),
 	sessionStore = new RedisStore;
 
+	function log(type) {
+		return console[type].apply(console[type], [].call.slice(arguments, 1));
+	}
+
 CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Transport) {
 
 	var transport = new Transport(olives.handlers);
@@ -109,10 +113,12 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 
 				user.unsync();
 			}, function (result) {
+				var error = JSON.stringify(result);
 				onEnd({
 						status: "failed",
-						message: "Unexpected error"
+						message: "Unexpected error" + error
 					});
+				log("error", error);
 				user.unsync();
 			});
 		});
@@ -120,6 +126,6 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 });
 
 process.on('uncaughtException', function (error) {
-	console.log(error.stack);
+	log("error", error.stack);
 });
 
