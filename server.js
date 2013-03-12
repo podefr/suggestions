@@ -18,6 +18,10 @@ var connect = require("connect"),
 		return console[type].apply(console[type], [].call.slice(arguments, 1));
 	}
 
+CouchDBTools.configuration.sessionStore = sessionStore;
+
+olives.handlers.set("CouchDB", CouchDBTools.handler);
+
 CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Transport) {
 
 	var transport = new Transport(olives.handlers);
@@ -46,8 +50,6 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 		http.globalAgent.maxSockets = Infinity;
 
 		olives.registerSocketIO(io);
-
-		CouchDBTools.configuration.sessionStore = sessionStore;
 
 		olives.handlers.set("CreateAccount", function (json, onEnd) {
 			var user = new CouchDBUser;
@@ -83,6 +85,7 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 			user.set("name", json.name);
 
 			user.login().then(function (result) {
+
 				var result = JSON.parse(result);
 
 				if (!result.error) {
@@ -125,7 +128,7 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 
 });
 
-process.on('uncaughtException', function (error) {
-	log("error", error.stack);
-});
+//process.on('uncaughtException', function (error) {
+//	log("error", error.stack);
+//});
 
