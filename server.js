@@ -128,7 +128,7 @@ CouchDBTools.requirejs(["CouchDBUser", "Transport"], function (CouchDBUser, Tran
 
 });
 
-//process.on('uncaughtException', function (error) {
-//	log("error", error.stack);
-//});
+process.on('uncaughtException', function (error) {
+	log("error", error.stack);
+});
 
