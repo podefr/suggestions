@@ -58,11 +58,10 @@
 			<legend data-texts="bind:innerHTML, legend">New Suggestion</legend>
 				<div class="control-group">
 					<input data-model="bind: value, author" readonly="readonly" class="input-xlarge" placeholder="You must be logged in to post a suggestion"/>
-					<span class="help-inline hidden" data-texts="bind: removeClass, errorAuthor, hidden">This field is required!</span>
 				</div>
 				<div class="control-group">
 					<textarea class="input-xlarge" data-model="bind:value, desc" rows="3" placeholder="What do you suggest?"></textarea>
-					<span class="help-inline hidden" data-texts="bind: removeClass, errorDesc, hidden">This field is required!</span>
+					<span class="hidden" data-texts="bind: removeClass, errorDesc, hidden">This field is required!</span>
 				</div>
 			  <div class="form-action">
 			  	<button class="btn" type="button" data-event="listen:click,cancel">Cancel</button>
