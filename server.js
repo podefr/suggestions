@@ -19,6 +19,7 @@ var connect = require("connect"),
 	}
 
 CouchDBTools.configuration.sessionStore = sessionStore;
+CouchDBTools.configuration.cookieID = "suggestions.sid";
 
 olives.handlers.set("CouchDB", CouchDBTools.handler);
 
